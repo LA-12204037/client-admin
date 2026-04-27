@@ -1,38 +1,35 @@
 import axios from 'axios';
 
-import { useAuthStore } from '../../features/auth/store/authStore.js';
+import { useAuthStore } from "../../features/auth/store/authStore.js";
 
-// Instacia de axios
 const axiosAuth = axios.create({
     baseURL: import.meta.env.VITE_AUTH_URL,
     timeout: 8000,
     headers:{
-        "Content-Type": "application/json",
+        "Content-Type": "Application/json",
     }
 });
 
-// Configuración de interceptores
 axiosAuth.interceptors.request.use( (config)=>{
     config._axiosClient = "auth";
     const token = useAuthStore.getState().token;
     if(token){
-        config.headers.Authorization = `Bearer.${token}`;
+        config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 } );
 
-
 // configuración de documentación axios
 let _isRefreshing = false;
 let failedQueue = [];
-
+ 
 function _processQueue(_error, token = null) {
   failedQueue.forEach(({ resolve, reject }) =>
     _error ? reject(_error) : resolve(token),
   );
   failedQueue = [];
 }
-
+ 
 const handleRefreshToken = async function (_error) {
   const _original = _error.config;
   if (!_original || _original._retry) {
@@ -47,13 +44,13 @@ const handleRefreshToken = async function (_error) {
     !isRefreshEndpoint &&
     // La mayoría de casos es 401 (TokenExpiredError)
     status === 401;
-
+ 
   // Algunos servicios pueden responder 403 con `error: TOKEN_EXPIRED`
   const shouldAttemptRefreshFrom403 =
     !isRefreshEndpoint && status === 403 && errorCode === "TOKEN_EXPIRED";
-
+ 
   const shouldRefresh = shouldAttemptRefresh || shouldAttemptRefreshFrom403;
-
+ 
   if (shouldRefresh) {
     const retryClient =
       _original._axiosClient === "admin" ? axiosAdmin : axiosAuth;
@@ -103,11 +100,11 @@ const handleRefreshToken = async function (_error) {
   }
   return Promise.reject(_error);
 };
-
+ 
 axiosAuth.interceptors.response.use((res) => res, handleRefreshToken);
-
+ 
 //axiosAdmin.interceptors.response.use((res) => res, handleRefreshToken);
-
+ 
 // ================= EXPORT AXIOS =================
 //export { axiosAuth, axiosAdmin };
 export { axiosAuth };

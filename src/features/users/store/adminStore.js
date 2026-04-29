@@ -2,18 +2,20 @@ import { create } from "zustand";
 import {
   getFields as getFieldsRequest,
   createField as createFieldRequest,
-  updateField as _updateFieldRequest,
-  deleteField as _deleteFieldRequest,
+  updateField as updateFieldRequest,
+  deleteField as deleteFieldRequest,
   getAllReservations as getAllReservationsRequest,
   confirmReservation as confirmReservationRequest,
 } from "../../../shared/api";
 
+// ================= STORE CAMPOS =================
 export const useFieldsStore = create((set, get) => ({
   fields: [],
   reservations: [],
   loading: false,
   error: null,
 
+  // Obtener campos
   getFields: async () => {
     try {
       set({ loading: true, error: null });
@@ -26,12 +28,15 @@ export const useFieldsStore = create((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error.response?.data?.message || "Error al obtener canchas",
+        error:
+          error.response?.data?.message ||
+          "Error al obtener canchas",
         loading: false,
       });
     }
   },
 
+  // Crear campo
   createField: async (formData) => {
     try {
       set({ loading: true, error: null });
@@ -44,17 +49,58 @@ export const useFieldsStore = create((set, get) => ({
       });
     } catch (error) {
       set({
+        error:
+          error.response?.data?.message ||
+          "Error al crear campo",
         loading: false,
-        error: error.response?.data?.message || "Error al crear campo",
       });
     }
   },
-  // ...rest of logic
 
+  // Actualizar campo
+  updateField: async (id, formData) => {
+    try {
+      set({ loading: true, error: null });
+
+      await updateFieldRequest(id, formData);
+
+      await get().getFields();
+    } catch (error) {
+      set({
+        error:
+          error.response?.data?.message ||
+          "Error al actualizar campo",
+        loading: false,
+      });
+    }
+  },
+
+  // Eliminar campo
+  deleteField: async (id) => {
+    try {
+      set({ loading: true, error: null });
+
+      await deleteFieldRequest(id);
+
+      await get().getFields();
+    } catch (error) {
+      set({
+        error:
+          error.response?.data?.message ||
+          "Error al eliminar campo",
+        loading: false,
+      });
+    }
+  },
+
+  // Reservaciones
   getAllReservations: async () => {
     try {
       set({ loading: true, error: null });
-      const response = await getAllReservationsRequest();
+
+      const response =
+        await getAllReservationsRequest();
+
       set({
         reservations: response.data.data,
         loading: false,
@@ -62,7 +108,8 @@ export const useFieldsStore = create((set, get) => ({
     } catch (error) {
       set({
         error:
-          error.response?.data?.message || "Error al obtener reservaciones",
+          error.response?.data?.message ||
+          "Error al obtener reservaciones",
         loading: false,
       });
     }
@@ -71,16 +118,36 @@ export const useFieldsStore = create((set, get) => ({
   confirmReservation: async (id) => {
     try {
       set({ loading: true, error: null });
+
       await confirmReservationRequest(id);
-      // Refrescar lista después de confirmar
+
       await get().getAllReservations();
+
       set({ loading: false });
     } catch (error) {
       set({
         error:
-          error.response?.data?.message || "Error al confirmar reservación",
+          error.response?.data?.message ||
+          "Error al confirmar reservación",
         loading: false,
       });
+    }
+  },
+}));
+
+// ================= STORE UI =================
+export const useUIStore = create((set) => ({
+  openConfirm: ({
+    title = "Confirmar",
+    message = "¿Deseas continuar?",
+    onConfirm,
+  }) => {
+    const ok = window.confirm(
+      `${title}\n\n${message}`
+    );
+
+    if (ok && onConfirm) {
+      onConfirm();
     }
   },
 }));

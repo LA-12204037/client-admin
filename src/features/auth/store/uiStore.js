@@ -1,22 +1,42 @@
-import {create} from "zustand";
+import { create } from "zustand";
 
-export const useUIStore = crate((set) =>({
-    
-    nodal: null,
-    confirm: null,
+export const useUIStore = create((set) => ({
+  modal: null,
+  confirm: null,
 
-    OpenModal: (title,message,onClose)=> set(
-        {
-        modal : {title,message,onClose}
-       }
-    ),
+  // ================= MODAL =================
+  openModal: (title, message, onClose = null) =>
+    set({
+      modal: {
+        title,
+        message,
+        onClose,
+      },
+    }),
 
-    CloseModal: ()=> set ({modal:null}),
+  closeModal: () =>
+    set({
+      modal: null,
+    }),
 
-    OpenConfirm: (title,message,OpenConfirm,onClose)=> set ({
+  // ================= CONFIRM =================
+  openConfirm: (
+    title,
+    message,
+    onConfirm = null,
+    onCancel = null
+  ) =>
+    set({
+      confirm: {
+        title,
+        message,
+        onConfirm,
+        onCancel,
+      },
+    }),
 
- confirm: {title,message,onConfirm,onCancel}   
-}),
-closeConfirm: ()=> set ({confirm:null})
- 
+  closeConfirm: () =>
+    set({
+      confirm: null,
+    }),
 }));
